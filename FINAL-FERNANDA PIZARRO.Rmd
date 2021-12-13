@@ -1,0 +1,181 @@
+---
+title: "FINAL-FERNANDA PIZARRO"
+author: "FERNANDA PIZARRO"
+date: "13/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#BASE1: list of freedom indices
+```{r}
+link = "https://en.wikipedia.org/wiki/List_of_freedom_indices"
+path = "/html/body/div[3]/div[3]/div[5]/div[1]/table[2]"
+library(htmltab)
+dataWS = htmltab(link, path)
+head(dataWS)
+```
+
+```{r}
+dataWS$`Freedom in the World 2021` =factor(dataWS$`Freedom in the World 2021`,
+                   levels=c("not free","partly free","free"), 
+                   ordered = T)
+dataWS$`2021 Index of Economic Freedom`=as.factor(dataWS$`2021 Index of Economic Freedom`)
+dataWS$`2021 Press Freedom Index`=as.factor(dataWS$`2021 Press Freedom Index`)
+dataWS$`2020 Democracy Index`=as.factor(dataWS$`2020 Democracy Index`)
+
+dataWS[dataWS == "n/a"] <- NA
+na.omit(dataWS)
+dataWS$Country=substr(dataWS$Country,3,100)
+
+```
+
+#CLUSTER5( no seguda de 2-5)
+```{r}
+library(cluster)
+set.seed(123)
+g.dist = daisy(dataWS[,c(2:5)], metric="gower")
+```
+
+```{r}
+library(cluster)
+library(purrr)
+set.seed(123)
+SUGERIDOS=5
+res.pam=pam(g.dist,k = SUGERIDOS,cluster.only = F)
+dataWS$pam=res.pam$cluster
+res.agnes <- hcut(g.dist, k = SUGERIDOS,hc_func='agnes')
+dataWS$agnes=res.agnes$cluster
+res.diana <- hcut(g.dist, k = SUGERIDOS,hc_func='diana')
+dataWS$diana=res.diana$cluster
+```
+
+
+#cluster3
+```{r}
+library(cluster)
+set.seed(123)
+g.dist = daisy(dataWS[,c(2:5)], metric="gower")
+```
+
+```{r}
+set.seed(123)
+SUGERIDOS=3
+res.pam=pam(g.dist,k = SUGERIDOS,cluster.only = F)
+dataWS$pam=res.pam$cluster
+res.agnes <- hcut(g.dist, k = SUGERIDOS,hc_func='agnes')
+dataWS$agnes=res.agnes$cluster
+res.diana <- hcut(g.dist, k = SUGERIDOS,hc_func='diana')
+dataWS$diana=res.diana$cluster
+```
+#Evaluando cual es mejor 
+```{r}
+fviz_silhouette(res.pam)
+```
+
+```{r}
+fviz_silhouette(res.agnes)
+```
+
+```{r}
+fviz_silhouette(res.diana)
+```
+
+#base2:Democracy Index(falta)(country)
+```{r}
+link1 = "https://en.wikipedia.org/wiki/Democracy_Index"
+path1 = "/html/body/div[3]/div[3]/div[5]/div[1]/table[6]"
+library(htmltab)
+dataWS1 = htmltab(link1, path1)
+head(dataWS1)
+dataWS1$Country=substr(dataWS1$Country,3,100)
+```
+```{r}
+dataWS1 = dataWS1[,-c(1,2)]
+dataWS1 = dataWS1[,-c(4,5,6,7,8,9,10,11,12,13,14)]
+```
+
+#Base3:World Happiness Report(falta)
+```{r}
+link3 = "https://en.wikipedia.org/wiki/World_Happiness_Report"
+path3 = "/html/body/div[3]/div[3]/div[5]/div[1]/div[11]/table/tbody/tr[2]/td/table"
+library(htmltab)
+dataWS3 = htmltab(link3, path3)
+head(dataWS3)
+
+```
+```{r}
+dataWS3 = dataWS3[,-c(4,9)]
+str(dataWS3$Score)
+dataWS3$Score= as.numeric(dataWS3$Score)
+```
+
+
+```{r}
+library(rio)
+data="https://raw.githubusercontent.com/FernandaPizarro/FINAL-ESTADISTICA/main/export.csv"
+DATA4 =import(data)
+```
+
+
+
+
+#base5:TWF: EDUCACION EXPENDITURES 
+```{r}
+library(rio)
+daa5="https://raw.githubusercontent.com/FernandaPizarro/FINAL-ESTADISTICA/main/export%20(1).csv"
+DATA5 =import(daa5)
+```
+
+#base6: Current health expenditure (% of GDP) (TWB)
+```{r}
+library(rio)
+daa6="https://github.com/FernandaPizarro/FINAL-ESTADISTICA/blob/main/API_SH.XPD.CHEX.GD.ZS_DS2_en_excel_v2_3360262.xls?raw=true"
+DATA6 =import(daa6)
+```
+
+```{r}
+dataWS[dataWS == "n/a"] <- NA
+na.omit(dataWS)
+dataWS$Country=substr(dataWS$Country,3,100)
+
+DATA6 = DATA6[,-c(5:50)]
+dataWS$`Freedom in the World 2021` =factor(dataWS$`Freedom in the World 2021`,
+                   levels=c("not free","partly free","free"), 
+                   ordered = T)
+dataWS$`2021 Index of Economic Freedom`=as.factor(dataWS$`2021 Index of Economic Freedom`)
+dataWS$`2021 Press Freedom Index`=as.factor(dataWS$`2021 Press Freedom Index`)
+dataWS$`2020 Democracy Index`=as.factor(dataWS$`2020 Democracy Index`)
+
+
+
+```
+
+#base7: TWB: INFANT MORTALITY RATE 
+```{r}
+library(rio)
+daa7="https://raw.githubusercontent.com/FernandaPizarro/FINAL-ESTADISTICA/main/export%20(2).csv"
+DATA7 =import(daa7)
+```
+
+#base8: TQF: NET MIGRATION RATE
+
+```{r}
+library(rio)
+daa8="https://raw.githubusercontent.com/FernandaPizarro/FINAL-ESTADISTICA/main/export%20(3).csv"
+DATA8 =import(daa8)
+```
+
+#base9: TWF- UNEMPLOYMENT
+```{r}
+library(rio)
+daa9="https://raw.githubusercontent.com/FernandaPizarro/FINAL-ESTADISTICA/main/export%20(4).csv"
+DATA9 =import(daa9)
+```
+
+
+
+
+
